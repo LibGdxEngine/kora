@@ -1,0 +1,16 @@
+steps:
+  - name: "gcr.io/cloud-builders/npm"
+    dir: "backend"
+    args: ["install"]
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    entrypoint: "bash"
+    args:
+      [
+        "-c",
+        "cd backend",
+        "gcloud config set app/cloud_build_timeout 1600 && gcloud app deploy",
+      ]
+  - name: "gcr.io/cloud-builders/gcloud"
+    dir: "backend"
+    args: ["app", "deploy"]
+timeout: "1600s"
