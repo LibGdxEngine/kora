@@ -28,8 +28,10 @@ const USER_CONFIRMATION_STATUS = {
 };
 
 exports.getNearClubs = async (req, res) => {
-  const coordinates = req.body.coordinates;
-
+  let coordinates = req.body.coordinates;
+  if (!coordinates) {
+    coordinates = [30.2342, 31.2233];
+  }
   // const maxDistance = req.body.maxDistance  ? req.body.maxDistance : 1000; //1 Kilo meter from user
   const userLocation = {
     type: "Point",
