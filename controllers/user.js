@@ -28,26 +28,29 @@ const USER_CONFIRMATION_STATUS = {
 };
 
 exports.getNearClubs = async (req, res) => {
-  const userLocation = req.body.userLocation;
-  const maxDistance = req.body.maxDistance ? req.body.maxDistance : 1000; //1 Kilo meter from user
-  Club.find({
-    location: {
-      $near: {
-        $geometry: {
-          type: "Point",
-          coordinates: userLocation,
-        },
+  const coordinates = req.body.coordinates;
+
+  // const maxDistance = req.body.maxDistance  ? req.body.maxDistance : 1000; //1 Kilo meter from user
+  const userLocation = {
+    type: "Point",
+    // coordinates: [30.2342, 31.2233], // User's coordinates
+    coordinates: coordinates,
+  };
+  Club.aggregate([
+    {
+      $geoNear: {
+        near: userLocation,
+        distanceField: "distance",
+        spherical: true,
+        maxDistance: 10000, // Maximum distance in meters (adjust as needed)
       },
     },
-  })
-    .populate("stadiums")
-    .then((clubs) => {
-      console.log("Nearby clubs:", clubs);
-      return res.json({ clubs });
+  ])
+    .then((result) => {
+      return res.json({ result });
     })
     .catch((error) => {
-      console.error("Error retrieving clubs:", error);
-      return res.status(400).json({ error: error });
+      console.error(error);
     });
 };
 

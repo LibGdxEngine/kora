@@ -26,7 +26,7 @@ const clubSchema = new mongoose.Schema({
     ref: "User",
   },
 });
-
+clubSchema.index({ location: '2dsphere' });
 const Club = mongoose.model("Club", clubSchema);
 
 module.exports = Club;
