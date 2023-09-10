@@ -13,7 +13,7 @@ const userSchema = mongoose.Schema(
     phone: {
       type: String,
     },
-
+    followedClubs: [{ type: mongoose.Schema.Types.ObjectId, ref: "Club" }],
     name: {
       type: String,
       trim: true,

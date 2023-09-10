@@ -27,6 +27,77 @@ const USER_CONFIRMATION_STATUS = {
   BLOCKED: 4,
 };
 
+exports.followClub = async (req, res) => {
+  try {
+    let userId = req.body.userId;
+    let clubId = req.body.clubId;
+    const user = await User.findById(userId); // Get the current user
+    const club = await Club.findById(clubId);
+
+    if (user.followedClubs.includes(club._id)) {
+      return res
+        .status(400)
+        .json({ message: "You are already following this stadium" });
+    }
+
+    // Add the stadium to the user's followedStadiums
+    user.followedClubs.push(club);
+    await user.save();
+
+    // Add the user to the stadium's followers
+    club.followers.push(user);
+    await club.save();
+
+    res.status(200).json({ message: "club followed successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+exports.unfollowClub = async (req, res) => {
+  try {
+    let userId = req.body.userId;
+    let clubId = req.body.clubId;
+    const user = await User.findById(userId); // Get the current user
+    const club = await Club.findById(clubId);
+
+    if (!user.followedClubs.includes(club._id)) {
+      return res
+        .status(400)
+        .json({ message: "You are already unfollowing this stadium" });
+    }
+
+    // Add the stadium to the user's followedStadiums
+    user.followedClubs.pull(club);
+    await user.save();
+
+    // Add the user to the stadium's followers
+    club.followers.pull(user);
+    await club.save();
+
+    res.status(200).json({
+      message: "club unfollowed successfullys",
+      club: club,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+exports.getClub = async (req, res) => {
+  let clubId = req.body.clubId;
+  Club.find({ _id: clubId })
+    .populate("stadiums")
+    .exec((err, data) => {
+      if (err) {
+        return json.error({ error: err });
+      }
+      return res.json(data);
+    });
+};
+
 exports.getNearClubs = async (req, res) => {
   let coordinates = req.body.coordinates;
   if (!coordinates) {

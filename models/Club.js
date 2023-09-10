@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const clubSchema = new mongoose.Schema({
   name: { type: String, required: true },
   stadiums: [{ type: mongoose.Schema.Types.ObjectId, ref: "Stadium" }],
+  followers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   address: {
     type: String,
   },
@@ -26,7 +27,7 @@ const clubSchema = new mongoose.Schema({
     ref: "User",
   },
 });
-clubSchema.index({ location: '2dsphere' });
+clubSchema.index({ location: "2dsphere" });
 const Club = mongoose.model("Club", clubSchema);
 
 module.exports = Club;
