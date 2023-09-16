@@ -98,11 +98,143 @@ exports.getClub = async (req, res) => {
     });
 };
 
+async function getAllStadiumAvailabilityDates(stadiumId) {
+  try {
+    const today = new Date();
+    const endDate = new Date(today);
+    endDate.setDate(today.getDate() + 14); // Calculate the end date (14 days from today)
+
+    // Find the stadium by ID
+    const stadium = await Stadium.findById(stadiumId);
+
+    if (!stadium) {
+      throw new Error("Stadium not found");
+    }
+
+    // Create an array to store all availability dates for the next 14 days
+    const availabilityData = [];
+
+    // Loop through each date within the range
+    for (
+      let date = new Date(today);
+      date <= endDate;
+      date.setDate(date.getDate() + 1)
+    ) {
+      const dayAvailability = stadium.availability.find(
+        (day) => day.date.getTime() === date.getTime()
+      );
+
+      // If availability data doesn't exist for the current date, create it with default slots
+      if (!dayAvailability) {
+        stadium.availability.push({
+          date: new Date(date),
+          slots: Array.from({ length: 24 }, (_, hour) => ({
+            hour,
+            status: "free", // Default status is "free"
+          })),
+        });
+
+        availabilityData.push({
+          date: new Date(date),
+          slots: Array.from({ length: 24 }, (_, hour) => ({
+            hour,
+            status: "free", // Default status is "free"
+          })),
+        });
+      } else {
+        availabilityData.push(dayAvailability);
+      }
+    }
+
+    // Save the updated stadium document
+    await stadium.save();
+
+    return availabilityData;
+  } catch (error) {
+    console.error(
+      "Error fetching or creating stadium availability:",
+      error.message
+    );
+    throw error;
+  }
+}
+
+exports.getStadiumAvailabilityData = async (req, res) => {
+  const stadiumId = req.body.stadiumId;
+  getAllStadiumAvailabilityDates(stadiumId)
+    .then((availabilityData) => {
+      return res.json(availabilityData);
+    })
+    .catch((err) => {
+      console.error(err);
+      return res.status(400).json({ error: "stadium user not found" });
+    });
+};
+
+async function reserveSlot(stadiumId, date, hour) {
+  try {
+    // Find the stadium by ID
+    const stadium = await Stadium.findById(stadiumId);
+
+    if (!stadium) {
+      throw new Error("Stadium not found");
+    }
+
+    // Find the availability data for the specified date
+    const dayAvailability = stadium.availability.find(
+      (day) => day.date.getTime() === date.getTime()
+    );
+
+    if (!dayAvailability) {
+      throw new Error("Availability data not found for the specified date");
+    }
+
+    // Find the slot within the availability data for the specified hour
+    const slot = dayAvailability.slots.find((slot) => slot.hour === hour);
+
+    if (!slot) {
+      throw new Error("Slot not found for the specified hour");
+    }
+
+    // Check if the slot is already reserved
+    if (slot.status === "reserved") {
+      throw new Error("Slot is already reserved");
+    }
+
+    // Update the slot's status to "reserved"
+    slot.status = "reserved";
+
+    // Save the updated stadium document
+    await stadium.save();
+
+    return stadium; // You can return the updated stadium document or a success message
+  } catch (error) {
+    console.error("Error reserving slot:", error.message);
+    throw error;
+  }
+}
+
+exports.reserveSlotForSomeone = async (req, res) => {
+  const stadiumId = req.body.stadiumId;
+  const date = req.body.date;
+  const hour = req.body.hour;
+
+  reserveSlot(stadiumId, date, hour)
+    .then((availabilityData) => {
+      return res.json(availabilityData);
+    })
+    .catch((err) => {
+      console.error(err);
+      return res.status(400).json({ error: "stadium user not found" });
+    });
+};
+
 exports.getNearClubs = async (req, res) => {
   let coordinates = req.body.coordinates;
   if (!coordinates) {
     coordinates = [30.2342, 31.2233];
   }
+
   // const maxDistance = req.body.maxDistance  ? req.body.maxDistance : 1000; //1 Kilo meter from user
   const userLocation = {
     type: "Point",
@@ -124,6 +256,7 @@ exports.getNearClubs = async (req, res) => {
     })
     .catch((error) => {
       console.error(error);
+      return res.status(400).json({ error });
     });
 };
 
