@@ -261,23 +261,26 @@ exports.getNearClubs = async (req, res) => {
 };
 
 exports.createNewClub = async (req, res) => {
-  const newStadium = new Stadium({
-    name: "stad1",
-    photos: ["photo1", "photo2"],
-    size: 5,
-  });
-  await newStadium.save();
+  const stadiums = req.body.stadiums;
+  const stads = [];
+  for (let i = 0; i < stadiums.length; i++) {
+    const newStadium = new Stadium({
+      name: stadiums[i].name,
+      photos: stadiums[i].photos,
+      size: stadiums[i].size,
+    });
+    await newStadium.save();
+    stads.push(newStadium);
+  }
+
   const newClub = new Club({
-    name: "1",
-    stadiums: [newStadium],
-    address: "2",
-    cost: "150",
-    photos: ["photo1", "photo2"],
-    location: {
-      type: "Point",
-      coordinates: [30.2342, 31.2233],
-    },
-    description: "3",
+    name: req.body.name,
+    stadiums: stads,
+    address: req.body.address,
+    cost: req.body.cost,
+    photos: req.body.photos,
+    location: req.body.location,
+    description: req.body.description,
   });
 
   await newClub.save();
