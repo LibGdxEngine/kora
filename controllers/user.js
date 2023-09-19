@@ -271,6 +271,8 @@ exports.createNewClub = async (req, res) => {
     name: "1",
     stadiums: [newStadium],
     address: "2",
+    cost: "150",
+    photos: ["photo1", "photo2"],
     location: {
       type: "Point",
       coordinates: [30.2342, 31.2233],

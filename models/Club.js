@@ -7,6 +7,12 @@ const clubSchema = new mongoose.Schema({
   address: {
     type: String,
   },
+  cost: {
+    type: String,
+  },
+  photos: {
+    type: [String],
+  },
   location: {
     type: {
       type: String,
