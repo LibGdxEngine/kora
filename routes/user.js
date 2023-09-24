@@ -25,7 +25,7 @@ const {
   createNewClub,
 
   getNearClubs,
-  getClub,
+  // getClub,
   getStadiumAvailabilityData,
   followClub,
   unfollowClub,
@@ -51,8 +51,8 @@ router.post("/user/follow-club", requireSignIn, authMiddleware, followClub);
 
 router.post("/user/unfollow-club", requireSignIn, authMiddleware, unfollowClub);
 
-router.post("/user/get-club", getClub);
-router.post("/user/getStadiumAvailabilityData", getStadiumAvailabilityData);
+router.post("/user/get-club", getStadiumAvailabilityData);
+// router.post("/user/getStadiumAvailabilityData", getStadiumAvailabilityData);
 
 router.get("/users-statistics", getStatistics);
 router.get("/user/profile", requireSignIn, authMiddleware, read);

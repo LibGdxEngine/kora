@@ -98,7 +98,7 @@ exports.getClub = async (req, res) => {
     });
 };
 
-async function getAllStadiumAvailabilityDates(stadiumId) {
+async function getStadiumById(stadiumId) {
   try {
     const today = new Date();
     const endDate = new Date(today);
@@ -149,7 +149,7 @@ async function getAllStadiumAvailabilityDates(stadiumId) {
     // Save the updated stadium document
     await stadium.save();
 
-    return availabilityData;
+    return stadium;
   } catch (error) {
     console.error(
       "Error fetching or creating stadium availability:",
@@ -161,7 +161,7 @@ async function getAllStadiumAvailabilityDates(stadiumId) {
 
 exports.getStadiumAvailabilityData = async (req, res) => {
   const stadiumId = req.body.stadiumId;
-  getAllStadiumAvailabilityDates(stadiumId)
+  getStadiumById(stadiumId)
     .then((availabilityData) => {
       return res.json(availabilityData);
     })
