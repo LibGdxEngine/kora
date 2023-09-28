@@ -250,6 +250,14 @@ exports.getNearClubs = async (req, res) => {
         maxDistance: 10000, // Maximum distance in meters (adjust as needed)
       },
     },
+    {
+      $lookup: {
+        from: "stadia", // The name of the Stadium collection
+        localField: "stadiums", // The field in the Club collection that refers to the Stadium
+        foreignField: "_id", // The field in the Stadium collection that is matched
+        as: "stadiums", // The name of the new field to populate with Stadium documents
+      },
+    },
   ])
     .then((result) => {
       return res.json({ result });
