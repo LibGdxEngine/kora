@@ -18,6 +18,7 @@ const Club = require("../models/Club");
 const Stadium = require("../models/Stadium");
 const Reservation = require("../models/Reservation");
 const ObjectId = mongoose.Types.ObjectId;
+const moment = require("moment");
 
 const USER_CONFIRMATION_STATUS = {
   PENDING: 0,
@@ -229,18 +230,67 @@ exports.reserveSlotForSomeone = async (req, res) => {
     });
 };
 
+const checkIfToday = (data) => {
+  // Get the current date
+  const currentDate = new Date();
+  if (
+    data.getDate() === currentDate.getDate() &&
+    data.getMonth() === currentDate.getMonth() &&
+    data.getFullYear() === currentDate.getFullYear()
+  ) {
+    return true;
+  } else {
+    return false;
+  }
+};
+//get number of days between two dates
+const getDifferenceBetweenDates = (date1, date2) =>
+  parseInt((date2.getTime() - date1.getTime()) / (1000 * 3600 * 24));
+
+// Function to calculate availability for the next 14 days
+function calculateNext14DaysAvailability(oldAvailability) {
+  const oldAvailabilityFirstDay = new Date(oldAvailability[0].date);
+  // Check if the oldAvailabilityFirstDay is the same as the current date
+  const isToday = checkIfToday(oldAvailabilityFirstDay);
+  //return the oldAvilability as we don't need to create new one
+  if (isToday) {
+    return oldAvailability;
+  } else {
+    //check how many days are between today and the first date of availability
+    const todayDate = new Date();
+    const countOfDifferenceDays = getDifferenceBetweenDates(
+      oldAvailabilityFirstDay,
+      todayDate
+    );
+
+    const newAvailability = [];
+    for (let i = 1; i <= 14; i++) {
+      const date = moment().add(i, "days").startOf("day");
+      const slots = Array.from({ length: 24 }, (_, hour) => ({
+        hour,
+        status: "free",
+      }));
+      newAvailability.push({ date, slots });
+    }
+    oldAvailability.push(...newAvailability);
+    // Remove the same number of objects from the beginning
+    oldAvailability.splice(0, countOfDifferenceDays);
+
+    return oldAvailability;
+  }
+}
+
 exports.getNearClubs = async (req, res) => {
   let coordinates = req.body.coordinates;
   if (!coordinates) {
     coordinates = [30.2342, 31.2233];
   }
 
-  // const maxDistance = req.body.maxDistance  ? req.body.maxDistance : 1000; //1 Kilo meter from user
   const userLocation = {
     type: "Point",
-    // coordinates: [30.2342, 31.2233], // User's coordinates
     coordinates: coordinates,
   };
+
   Club.aggregate([
     {
       $geoNear: {
@@ -259,7 +309,33 @@ exports.getNearClubs = async (req, res) => {
       },
     },
   ])
-    .then((result) => {
+    .then(async (result) => {
+      // Update the stadiums' availability with next 14 days availability
+      // Iterate through clubs and stadiums
+      for (const club of result) {
+        for (const stadium of club.stadiums) {
+          // Calculate and update next 14 days availability
+          stadium.availability = calculateNext14DaysAvailability(
+            stadium.availability
+          ).slice(0, 14);
+
+          const options = {
+            upsert: true, // If the document doesn't exist, insert a new one
+          };
+          Stadium.updateOne({ _id: stadium._id }, { $set: stadium }, options)
+            .then((result) => {
+              if (result.upserted) {
+                console.log("New stadium inserted:", result.upserted[0]._id);
+              } else {
+                console.log("Stadium updated:", stadium._id);
+              }
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+            });
+        }
+      }
+
       return res.json({ result });
     })
     .catch((error) => {
