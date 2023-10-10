@@ -249,7 +249,8 @@ const getDifferenceBetweenDates = (date1, date2) =>
 
 // Function to calculate availability for the next 14 days
 function calculateNext14DaysAvailability(oldAvailability) {
-  const oldAvailabilityFirstDay = new Date(oldAvailability[0].date);
+
+  const oldAvailabilityFirstDay = new Date(oldAvailability[0]?.date);
   // Check if the oldAvailabilityFirstDay is the same as the current date
   const isToday = checkIfToday(oldAvailabilityFirstDay);
   //return the oldAvilability as we don't need to create new one
@@ -313,6 +314,7 @@ exports.getNearClubs = async (req, res) => {
       // Update the stadiums' availability with next 14 days availability
       // Iterate through clubs and stadiums
       for (const club of result) {
+        
         for (const stadium of club.stadiums) {
           // Calculate and update next 14 days availability
           stadium.availability = calculateNext14DaysAvailability(
