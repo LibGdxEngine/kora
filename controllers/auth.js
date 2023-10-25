@@ -140,6 +140,7 @@ exports.signin = (req, res) => {
     return res.json({
       token,
       user: { _id, username, name, email , role},
+      
     });
   });
 };
