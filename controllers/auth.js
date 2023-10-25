@@ -139,7 +139,7 @@ exports.signin = (req, res) => {
     const { _id, username, name, email, role } = user;
     return res.json({
       token,
-      user: { _id, username, name, email },
+      user: { _id, username, name, email , role},
     });
   });
 };

@@ -255,7 +255,6 @@ function calculateNext14DaysAvailability(oldAvailability) {
   const isToday = checkIfToday(oldAvailabilityFirstDay);
   //return the oldAvilability as we don't need to create new one
   if (isToday) {
-  
     return oldAvailability;
   } else {
   
