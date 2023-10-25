@@ -255,8 +255,10 @@ function calculateNext14DaysAvailability(oldAvailability) {
   const isToday = checkIfToday(oldAvailabilityFirstDay);
   //return the oldAvilability as we don't need to create new one
   if (isToday) {
+  
     return oldAvailability;
   } else {
+  
     //check how many days are between today and the first date of availability
     const todayDate = new Date();
     const countOfDifferenceDays = getDifferenceBetweenDates(
