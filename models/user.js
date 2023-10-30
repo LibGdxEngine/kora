@@ -52,7 +52,9 @@ const userSchema = mongoose.Schema(
       data: String,
       default: "",
     },
-
+    ownedClubs: [
+      { type: mongoose.ObjectId, ref: "Club", required: false },
+    ],
     notifications: [
       { type: mongoose.ObjectId, ref: "Notification", required: false },
     ],

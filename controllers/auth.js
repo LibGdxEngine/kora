@@ -15,7 +15,7 @@ const formidable = require("formidable");
 // const { Client, LocalAuth } = require("whatsapp-web.js");
 
 const qrcode = require("qrcode-terminal");
-
+const mongoose = require('mongoose');
 const UserBehavior = require("../models/userBehavior");
 
 const {
@@ -116,7 +116,7 @@ exports.signup = async (req, res) => {
 exports.signin = (req, res) => {
   const { email, password } = req.body;
   //check if user exists
-  User.findOne({ email }).exec((err, user) => {
+  User.findOne({ email }).populate("ownedClubs").exec((err, user) => {
     if (err || !user) {
       return res.status(400).json({
         error: "هذا الحساب غير مسجل لدينا ... جرب تسجيل حسابك أولا",
@@ -136,11 +136,12 @@ exports.signin = (req, res) => {
 
     res.cookie("token", token, { expiresIn: "1y" });
 
-    const { _id, username, name, email, role } = user;
+    const { _id, username, name, email, role, ownedClubs } = user;
+
     return res.json({
       token,
-      user: { _id, username, name, email , role},
-      
+      user: { _id, username, name, email, role, ownedClubs },
+
     });
   });
 };
@@ -195,9 +196,19 @@ exports.logUserBehavior = (req, res, next) => {
     });
 };
 
+function convertToObjectId(str) {
+  if (mongoose.Types.ObjectId.isValid(str)) {
+    return mongoose.Types.ObjectId(str);
+  } else {
+    throw new Error('Invalid ObjectId');
+  }
+}
+
 exports.adminMiddleware = (req, res, next) => {
   const adminUserId = req.auth._id;
-  User.findById({ _id: adminUserId }).exec((err, user) => {
+
+  User.findOne({ _id: adminUserId }).exec((err, user) => {
+
     if (err || !user) {
       return res.status(400).json({
         error: "Admin User not found",

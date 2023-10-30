@@ -257,7 +257,7 @@ function calculateNext14DaysAvailability(oldAvailability) {
   if (isToday) {
     return oldAvailability;
   } else {
-  
+
     //check how many days are between today and the first date of availability
     const todayDate = new Date();
     const countOfDifferenceDays = getDifferenceBetweenDates(
@@ -315,7 +315,7 @@ exports.getNearClubs = async (req, res) => {
       // Update the stadiums' availability with next 14 days availability
       // Iterate through clubs and stadiums
       for (const club of result) {
-        
+
         for (const stadium of club.stadiums) {
           // Calculate and update next 14 days availability
           stadium.availability = calculateNext14DaysAvailability(
@@ -349,6 +349,7 @@ exports.getNearClubs = async (req, res) => {
 
 exports.createNewClub = async (req, res) => {
   const stadiums = req.body.stadiums;
+  const creatorId = req.body.creatorId;
   const stads = [];
   for (let i = 0; i < stadiums.length; i++) {
     const newStadium = new Stadium({
@@ -369,8 +370,8 @@ exports.createNewClub = async (req, res) => {
     location: req.body.location,
     description: req.body.description,
   });
-
   await newClub.save();
+  await User.findByIdAndUpdate(creatorId, { $push: { ownedClubs: newClub } }, { new: true });
   return res.json({ message: "success" });
 };
 
@@ -1047,10 +1048,10 @@ exports.makeRequestFailed = (req, res) => {
         });
       } else {
         User.findByIdAndUpdate(result.sender._id, { userStatus: 0 }).exec(
-          (err, user) => {}
+          (err, user) => { }
         );
         User.findByIdAndUpdate(result.reciever._id, { userStatus: 0 }).exec(
-          (err, user) => {}
+          (err, user) => { }
         );
         sendNotificationTo(
           result.sender._id,
