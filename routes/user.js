@@ -29,7 +29,7 @@ const {
   getStadiumAvailabilityData,
   followClub,
   unfollowClub,
-  // stadiumReservation,
+  reserve
 } = require("../controllers/user");
 
 router.post("/user/favourites", getFavourites);
@@ -89,5 +89,7 @@ router.put("/user/block-user", requireSignIn, adminMiddleware, blockUser);
 router.post("/user/search", requireSignIn, adminMiddleware, searchUser);
 
 router.get("/user/reports", requireSignIn, adminMiddleware, getUsersReports);
+
+router.post("/user/reserve", requireSignIn, adminMiddleware, reserve);
 
 module.exports = router;

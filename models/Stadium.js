@@ -3,6 +3,8 @@ const mongoose = require("mongoose");
 const slotSchema = new mongoose.Schema({
   hour: Number, // Hour of the day (0-23)
   status: { type: String, enum: ["reserved", "free"], default: "free" },
+  reserverName: String,
+  reserverPhone: String,
 });
 
 const dayAvailabilitySchema = new mongoose.Schema({

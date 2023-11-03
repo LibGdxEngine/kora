@@ -116,7 +116,12 @@ exports.signup = async (req, res) => {
 exports.signin = (req, res) => {
   const { email, password } = req.body;
   //check if user exists
-  User.findOne({ email }).populate("ownedClubs").exec((err, user) => {
+  User.findOne({ email }).populate({
+    path: "ownedClubs",
+    populate: {
+      path: "stadiums",
+    }
+  }).exec((err, user) => {
     if (err || !user) {
       return res.status(400).json({
         error: "هذا الحساب غير مسجل لدينا ... جرب تسجيل حسابك أولا",

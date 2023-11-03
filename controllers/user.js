@@ -28,6 +28,12 @@ const USER_CONFIRMATION_STATUS = {
   BLOCKED: 4,
 };
 
+exports.reserve = async (req, res)=>{
+  //convert one houre or more to reserved and set the name, phone of reserver
+  const slot = req.body.slot;
+  
+};
+
 exports.followClub = async (req, res) => {
   try {
     let userId = req.body.userId;
